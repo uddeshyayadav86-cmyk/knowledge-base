@@ -1,0 +1,4 @@
+com/kb/model/KnowledgeEntry$SourceType.class
+com/kb/KnowledgeBaseApplication.class
+com/kb/repository/KnowledgeEntryRepository.class
+com/kb/model/KnowledgeEntry.class

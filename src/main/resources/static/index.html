@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Second Brain</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0f0f0f;
+            --surface: #181818;
+            --surface2: #222222;
+            --border: #2a2a2a;
+            --text: #e8e4dc;
+            --muted: #6b6560;
+            --accent: #c8a96e;
+            --accent2: #7eb89a;
+            --danger: #c06060;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 300;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 32px 0;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            padding: 0 24px 32px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 22px;
+            color: var(--accent);
+            letter-spacing: -0.3px;
+        }
+
+        .logo span {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .nav {
+            padding: 24px 0;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 24px;
+            cursor: pointer;
+            font-size: 13.5px;
+            color: var(--muted);
+            transition: all 0.15s;
+            border-left: 2px solid transparent;
+        }
+
+        .nav-item:hover { color: var(--text); background: var(--surface2); }
+        .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(200,169,110,0.06); }
+
+        .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+        .stats {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .stat { margin-bottom: 6px; }
+        .stat strong { color: var(--text); font-weight: 500; }
+
+        /* ── MAIN ── */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 28px 40px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 26px;
+            font-weight: 400;
+        }
+
+        .header-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+        /* ── CONTENT AREA ── */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 36px 40px;
+        }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* ── QUERY PANEL ── */
+        .query-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 28px;
+        }
+
+        .query-label {
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-family: 'DM Mono', monospace;
+            margin-bottom: 12px;
+        }
+
+        .query-input-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        input[type="text"], textarea, select {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
+        input[type="text"] { flex: 1; }
+        textarea { width: 100%; resize: vertical; min-height: 80px; }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .btn-primary { background: var(--accent); color: #1a1400; }
+        .btn-primary:hover { background: #d4b87a; }
+        .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+        .btn-danger:hover { background: rgba(192,96,96,0.1); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+        .answer-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent2);
+            border-radius: 12px;
+            padding: 24px;
+            line-height: 1.7;
+            font-size: 14.5px;
+            white-space: pre-wrap;
+            display: none;
+        }
+
+        .answer-box.visible { display: block; }
+        .answer-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent2); font-family: 'DM Mono', monospace; margin-bottom: 12px; }
+
+        /* ── ADD ENTRY PANEL ── */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 28px;
+            background: var(--surface);
+            padding: 4px;
+            border-radius: 10px;
+            width: fit-content;
+        }
+
+        .tab {
+            padding: 8px 18px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--muted);
+            transition: all 0.15s;
+        }
+
+        .tab.active { background: var(--accent); color: #1a1400; font-weight: 500; }
+        .tab:hover:not(.active) { color: var(--text); }
+
+        .form-group { margin-bottom: 18px; }
+        .form-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; display: block; letter-spacing: 0.5px; }
+
+        .tag-input-row { display: flex; gap: 8px; }
+        .tags-display { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+        .tag {
+            background: rgba(200,169,110,0.12);
+            color: var(--accent);
+            border: 1px solid rgba(200,169,110,0.25);
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tag-remove { cursor: pointer; opacity: 0.6; }
+        .tag-remove:hover { opacity: 1; }
+
+        .submit-row { display: flex; gap: 12px; margin-top: 8px; }
+
+        /* ── ENTRIES LIST ── */
+        .search-row { display: flex; gap: 12px; margin-bottom: 24px; }
+        .entries-grid { display: flex; flex-direction: column; gap: 12px; }
+
+        .entry-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px 24px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .entry-card:hover { border-color: #3a3a3a; }
+
+        .entry-card-body { flex: 1; min-width: 0; }
+
+        .entry-card-title { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+        .entry-card-summary { font-size: 13px; color: var(--muted); line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .entry-card-meta { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+
+        .source-badge {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge-NOTE { background: rgba(126,184,154,0.15); color: var(--accent2); }
+        .badge-URL  { background: rgba(200,169,110,0.15); color: var(--accent); }
+        .badge-PDF  { background: rgba(180,120,120,0.15); color: #c08080; }
+        .badge-BOOK { background: rgba(120,150,200,0.15); color: #8090c0; }
+
+        .entry-date { font-size: 11px; color: var(--muted); }
+        .entry-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+        .entry-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+        /* ── REFLECT PANEL ── */
+        .reflect-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            line-height: 1.8;
+            font-size: 15px;
+            white-space: pre-wrap;
+            max-width: 700px;
+        }
+
+        .reflect-header {
+            font-family: 'DM Serif Display', serif;
+            font-size: 20px;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        /* ── LOADING ── */
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .spinner {
+            width: 14px; height: 14px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .empty-state {
+            text-align: center;
+            padding: 64px 24px;
+            color: var(--muted);
+        }
+
+        .empty-icon { font-size: 36px; margin-bottom: 12px; }
+        .empty-text { font-size: 14px; line-height: 1.6; }
+
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-size: 13.5px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { border-color: var(--accent2); color: var(--accent2); }
+        .toast.error { border-color: var(--danger); color: var(--danger); }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="logo">
+        <h1>Second Brain</h1>
+        <span>Knowledge Base</span>
+    </div>
+    <nav class="nav">
+        <div class="nav-item active" onclick="showPanel('query', this)">
+            <span class="nav-icon">🔍</span> Ask Anything
+        </div>
+        <div class="nav-item" onclick="showPanel('add', this)">
+            <span class="nav-icon">＋</span> Add Entry
+        </div>
+        <div class="nav-item" onclick="showPanel('entries', this); loadEntries()">
+            <span class="nav-icon">📚</span> All Entries
+        </div>
+        <div class="nav-item" onclick="showPanel('reflect', this)">
+            <span class="nav-icon">✦</span> Weekly Reflect
+        </div>
+    </nav>
+    <div class="stats" id="stats">
+        <div class="stat">Loading stats...</div>
+    </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+    <div class="header">
+        <div>
+            <h2 id="panel-title">Ask Anything</h2>
+            <div class="header-sub" id="panel-sub">Query your personal knowledge base using natural language</div>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- QUERY PANEL -->
+        <div class="panel active" id="panel-query">
+            <div class="query-box">
+                <div class="query-label">Your Question</div>
+                <div class="query-input-row">
+                    <input type="text" id="query-input" placeholder="What do I know about stoicism? What have I saved about sleep habits?" onkeydown="if(event.key==='Enter') askQuery()">
+                    <button class="btn btn-primary" onclick="askQuery()" id="query-btn">Ask</button>
+                </div>
+            </div>
+            <div class="answer-box" id="answer-box">
+                <div class="answer-label">Answer</div>
+                <div id="answer-text"></div>
+            </div>
+        </div>
+
+        <!-- ADD ENTRY PANEL -->
+        <div class="panel" id="panel-add">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('note', this)">📝 Note</div>
+                <div class="tab" onclick="switchTab('url', this)">🔗 URL</div>
+                <div class="tab" onclick="switchTab('pdf', this)">📄 PDF</div>
+            </div>
+
+            <!-- NOTE TAB -->
+            <div id="tab-note">
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input type="text" id="note-title" placeholder="e.g. Atomic Habits - Key Ideas" style="width:100%">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Content — paste your notes, highlights, or thoughts</label>
+                    <textarea id="note-content" placeholder="The aggregation of marginal gains... every 1% improvement adds up..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tags</label>
+                    <div class="tag-input-row">
+                        <input type="text" id="note-tag-input" placeholder="Add tag..." onkeydown="if(event.key==='Enter') addTag('note')">
+                        <button class="btn btn-secondary" onclick="addTag('note')">Add</button>
+                    </div>
+                    <div class="tags-display" id="note-tags"></div>
+                </div>
+                <div class="submit-row">
+                    <button class="btn btn-primary" onclick="submitNote()">Save Note</button>
+                </div>
+            </div>
+
+            <!-- URL TAB -->
+            <div id="tab-url" style="display:none">
+                <div class="form-group">
+                    <label class="form-label">URL to scrape</label>
+                    <input type="text" id="url-input" placeholder="https://example.com/interesting-article" style="width:100%">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tags</label>
+                    <div class="tag-input-row">
+                        <input type="text" id="url-tag-input" placeholder="Add tag..." onkeydown="if(event.key==='Enter') addTag('url')">
+                        <button class="btn btn-secondary" onclick="addTag('url')">Add</button>
+                    </div>
+                    <div class="tags-display" id="url-tags"></div>
+                </div>
+                <div class="submit-row">
+                    <button class="btn btn-primary" onclick="submitUrl()">Scrape & Save</button>
+                </div>
+            </div>
+
+            <!-- PDF TAB -->
+            <div id="tab-pdf" style="display:none">
+                <div class="form-group">
+                    <label class="form-label">PDF File</label>
+                    <input type="file" accept=".pdf" id="pdf-file" style="color:var(--text)">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Title (optional)</label>
+                    <input type="text" id="pdf-title" placeholder="Leave empty to use filename" style="width:100%">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tags</label>
+                    <div class="tag-input-row">
+                        <input type="text" id="pdf-tag-input" placeholder="Add tag..." onkeydown="if(event.key==='Enter') addTag('pdf')">
+                        <button class="btn btn-secondary" onclick="addTag('pdf')">Add</button>
+                    </div>
+                    <div class="tags-display" id="pdf-tags"></div>
+                </div>
+                <div class="submit-row">
+                    <button class="btn btn-primary" onclick="submitPdf()">Upload & Parse</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ENTRIES PANEL -->
+        <div class="panel" id="panel-entries">
+            <div class="search-row">
+                <input type="text" id="search-input" placeholder="Search entries..." style="flex:1" oninput="filterEntries()">
+            </div>
+            <div class="entries-grid" id="entries-grid">
+                <div class="empty-state">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- REFLECT PANEL -->
+        <div class="panel" id="panel-reflect">
+            <p style="font-size:14px; color:var(--muted); margin-bottom:24px; max-width:500px; line-height:1.6">
+                Claude will read everything you've added this week and generate a personal reflection — themes, connections, and one question to sit with.
+            </p>
+            <button class="btn btn-primary" onclick="loadReflection()" id="reflect-btn">Generate Weekly Reflection</button>
+            <div style="margin-top:28px" id="reflect-output"></div>
+        </div>
+
+    </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const API = 'http://localhost:8080/api';
+    const tagState = { note: [], url: [], pdf: [] };
+    let allEntries = [];
+
+    // ── NAV ──────────────────────────────────────────────────────────────────
+    const panelMeta = {
+        query:   { title: 'Ask Anything',     sub: 'Query your personal knowledge base using natural language' },
+        add:     { title: 'Add Entry',         sub: 'Ingest a note, URL, or PDF into your knowledge base' },
+        entries: { title: 'All Entries',       sub: 'Browse and search everything you\'ve saved' },
+        reflect: { title: 'Weekly Reflection', sub: 'Let AI surface patterns and themes from this week' }
+    };
+
+    function showPanel(name, el) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('panel-' + name).classList.add('active');
+        el.classList.add('active');
+        document.getElementById('panel-title').textContent = panelMeta[name].title;
+        document.getElementById('panel-sub').textContent = panelMeta[name].sub;
+    }
+
+    // ── QUERY ─────────────────────────────────────────────────────────────────
+    async function askQuery() {
+        const q = document.getElementById('query-input').value.trim();
+        if (!q) return;
+        const btn = document.getElementById('query-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading"><span class="spinner"></span> Thinking...</span>';
+        const box = document.getElementById('answer-box');
+        box.classList.remove('visible');
+        try {
+            const res = await fetch(`${API}/query`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: q })
+            });
+            const data = await res.json();
+            document.getElementById('answer-text').textContent = data.answer;
+            box.classList.add('visible');
+        } catch (e) {
+            showToast('Failed to query. Is the server running?', 'error');
+        }
+        btn.disabled = false;
+        btn.textContent = 'Ask';
+    }
+
+    // ── TABS ──────────────────────────────────────────────────────────────────
+    function switchTab(name, el) {
+        ['note','url','pdf'].forEach(t => {
+            document.getElementById('tab-' + t).style.display = t === name ? '' : 'none';
+        });
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    // ── TAGS ──────────────────────────────────────────────────────────────────
+    function addTag(type) {
+        const input = document.getElementById(`${type}-tag-input`);
+        const val = input.value.trim().toLowerCase();
+        if (!val || tagState[type].includes(val)) { input.value = ''; return; }
+        tagState[type].push(val);
+        renderTags(type);
+        input.value = '';
+    }
+
+    function removeTag(type, tag) {
+        tagState[type] = tagState[type].filter(t => t !== tag);
+        renderTags(type);
+    }
+
+    function renderTags(type) {
+        const container = document.getElementById(`${type}-tags`);
+        container.innerHTML = tagState[type].map(t =>
+            `<span class="tag">${t} <span class="tag-remove" onclick="removeTag('${type}','${t}')">×</span></span>`
+        ).join('');
+    }
+
+    // ── SUBMIT ────────────────────────────────────────────────────────────────
+    async function submitNote() {
+        const title = document.getElementById('note-title').value.trim();
+        const content = document.getElementById('note-content').value.trim();
+        if (!title || !content) return showToast('Title and content required', 'error');
+        try {
+            await apiFetch('/entries/note', 'POST', { title, content, tags: tagState.note });
+            showToast('Note saved!', 'success');
+            document.getElementById('note-title').value = '';
+            document.getElementById('note-content').value = '';
+            tagState.note = []; renderTags('note');
+            loadStats();
+        } catch(e) { showToast('Failed to save note', 'error'); }
+    }
+
+    async function submitUrl() {
+        const url = document.getElementById('url-input').value.trim();
+        if (!url) return showToast('URL required', 'error');
+        showToast('Scraping URL...', 'success');
+        try {
+            await apiFetch('/entries/url', 'POST', { url, tags: tagState.url });
+            showToast('URL saved!', 'success');
+            document.getElementById('url-input').value = '';
+            tagState.url = []; renderTags('url');
+            loadStats();
+        } catch(e) { showToast('Failed to scrape URL', 'error'); }
+    }
+
+    async function submitPdf() {
+        const file = document.getElementById('pdf-file').files[0];
+        if (!file) return showToast('Please select a PDF', 'error');
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('title', document.getElementById('pdf-title').value);
+        formData.append('tags', tagState.pdf.join(','));
+        showToast('Parsing PDF...', 'success');
+        try {
+            const res = await fetch(`${API}/entries/pdf`, { method: 'POST', body: formData });
+            if (!res.ok) throw new Error();
+            showToast('PDF saved!', 'success');
+            document.getElementById('pdf-file').value = '';
+            tagState.pdf = []; renderTags('pdf');
+            loadStats();
+        } catch(e) { showToast('Failed to parse PDF', 'error'); }
+    }
+
+    // ── ENTRIES ───────────────────────────────────────────────────────────────
+    async function loadEntries() {
+        try {
+            const res = await fetch(`${API}/entries`);
+            allEntries = await res.json();
+            renderEntries(allEntries);
+        } catch(e) {
+            document.getElementById('entries-grid').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Could not load entries. Is the server running?</div></div>`;
+        }
+    }
+
+    function filterEntries() {
+        const q = document.getElementById('search-input').value.toLowerCase();
+        const filtered = q ? allEntries.filter(e =>
+            e.title.toLowerCase().includes(q) ||
+            e.content.toLowerCase().includes(q) ||
+            (e.tags || []).some(t => t.includes(q))
+        ) : allEntries;
+        renderEntries(filtered);
+    }
+
+    function renderEntries(entries) {
+        const grid = document.getElementById('entries-grid');
+        if (!entries.length) {
+            grid.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">No entries yet.<br>Go add some notes, URLs, or PDFs!</div></div>`;
+            return;
+        }
+        grid.innerHTML = entries.map(e => `
+            <div class="entry-card">
+                <div class="entry-card-body">
+                    <div class="entry-card-title">${e.title}</div>
+                    <div class="entry-card-summary">${e.aiSummary || e.content.substring(0, 120) + '...'}</div>
+                    <div class="entry-card-meta">
+                        <span class="source-badge badge-${e.sourceType}">${e.sourceType}</span>
+                        <span class="entry-date">${new Date(e.createdAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})}</span>
+                        <div class="entry-tags">
+                            ${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+                <div class="entry-actions">
+                    <button class="btn btn-sm btn-danger" onclick="deleteEntry(${e.id}, event)">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function deleteEntry(id, event) {
+        event.stopPropagation();
+        if (!confirm('Delete this entry?')) return;
+        try {
+            await fetch(`${API}/entries/${id}`, { method: 'DELETE' });
+            showToast('Entry deleted', 'success');
+            loadEntries();
+            loadStats();
+        } catch(e) { showToast('Failed to delete', 'error'); }
+    }
+
+    // ── REFLECT ───────────────────────────────────────────────────────────────
+    async function loadReflection() {
+        const btn = document.getElementById('reflect-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading"><span class="spinner"></span> Claude is reflecting...</span>';
+        document.getElementById('reflect-output').innerHTML = '';
+        try {
+            const res = await fetch(`${API}/reflect/weekly`);
+            const data = await res.json();
+            document.getElementById('reflect-output').innerHTML = `
+                <div class="reflect-card">
+                    <div class="reflect-header">✦ This Week's Reflection</div>
+                    ${data.reflection}
+                </div>`;
+        } catch(e) { showToast('Failed to generate reflection', 'error'); }
+        btn.disabled = false;
+        btn.textContent = 'Generate Weekly Reflection';
+    }
+
+    // ── STATS ─────────────────────────────────────────────────────────────────
+    async function loadStats() {
+        try {
+            const res = await fetch(`${API}/entries`);
+            const entries = await res.json();
+            const byType = entries.reduce((a, e) => { a[e.sourceType] = (a[e.sourceType]||0)+1; return a; }, {});
+            document.getElementById('stats').innerHTML = `
+                <div class="stat"><strong>${entries.length}</strong> total entries</div>
+                ${Object.entries(byType).map(([k,v]) => `<div class="stat"><strong>${v}</strong> ${k.toLowerCase()}s</div>`).join('')}
+            `;
+        } catch(e) {}
+    }
+
+    // ── UTILS ─────────────────────────────────────────────────────────────────
+    async function apiFetch(path, method, body) {
+        const res = await fetch(API + path, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error('API error');
+        return res.json();
+    }
+
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // Init
+    loadStats();
+</script>
+</body>
+</html>
